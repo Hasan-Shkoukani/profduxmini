@@ -1,0 +1,204 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+html, body {
+  height: 100%;
+}
+
+/* ---------------- HERO ---------------- */
+
+.hero {
+  position: relative;
+  height: 100vh;
+  background: radial-gradient(circle at center, #111, #000);
+  overflow: hidden;
+}
+
+/* ---------------- VIDEO ---------------- */
+
+.bg-video {
+  position: absolute;
+  inset: -4%;
+  width: 108%;
+  height: 108%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+
+  transform: translateZ(0);
+  will-change: filter, transform;
+
+  transition:
+    filter 0.6s ease,
+    transform 0.6s ease;
+}
+
+/* ---------------- OVERLAY ---------------- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1;
+
+  transition: background 0.6s ease;
+}
+
+/* ---------------- CONTENT ---------------- */
+
+.content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+}
+
+.blur-group {
+  transition: opacity 0.8s ease, filter 0.8s ease;
+}
+
+h1 {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+/* ---------------- CALL BUTTON ---------------- */
+
+.circle-btn {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+
+  transition:
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.5s ease,
+    color 0.5s ease,
+    box-shadow 0.5s ease;
+}
+
+.circle-btn:hover {
+  background: white;
+  color: black;
+  transform: scale(1.15);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.35);
+}
+
+/* ---------------- HOVER EFFECT ---------------- */
+
+.hero:has(.circle-btn:hover) .bg-video {
+  filter: blur(5px);
+  transform: scale(1.03);
+}
+
+.hero:has(.circle-btn:hover) .overlay {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* ---------------- CALL CONTROLS ---------------- */
+
+.hidden {
+  display: none;
+}
+
+.call-controls {
+  margin-top: 1.5rem;
+  padding: 1.2rem 2rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+
+  animation: fadeUp 0.5s ease both;
+}
+
+.call-timer {
+  font-size: 1.4rem;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+}
+
+.end-call-btn {
+  padding: 0.7rem 1.8rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: white;
+  background: linear-gradient(135deg, #ff4d4d, #d63031);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 25px rgba(255, 77, 77, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.end-call-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 30px rgba(255, 77, 77, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.end-call-btn:active {
+  transform: translateY(0);
+  box-shadow:
+    0 8px 18px rgba(255, 77, 77, 0.35),
+    inset 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------------- IN CALL STATE ---------------- */
+
+.hero.in-call .bg-video {
+  opacity: 0.15;
+  filter: blur(6px);
+  transition: opacity 0.8s ease, filter 0.8s ease;
+}
+
+.hero.in-call .overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ---------------- ANIMATIONS ---------------- */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

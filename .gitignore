@@ -1,0 +1,6 @@
+.env
+Dockerfile
+.dockerignore
+token.json
+credentials.json
+__pycache__

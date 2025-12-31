@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Professor Dux Mini</title>
+
+  <link rel="stylesheet" href="/static/style.css">
+
+  <script src="https://sdk.twilio.com/js/voice-sdk/v2.6/twilio.min.js"></script>
+  <script type="module" src="/static/app.js"></script>
+</head>
+<body>
+
+<section class="hero">
+
+  <video
+    class="bg-video"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+  >
+    <source src="/static/video.mp4" type="video/mp4">
+  </video>
+
+  <div class="overlay"></div>
+
+  <div class="content">
+    <div class="blur-group">
+      <h1>Hey. This is Dux Mini</h1>
+      <p class="subtitle">Click to Call</p>
+    </div>
+
+    <button id="callBtn" class="circle-btn">▶</button>
+
+    <div id="callControls" class="hidden call-controls">
+      <p id="timer" class="call-timer">00:00</p>
+      <button id="stopBtn" class="end-call-btn">End Call</button>
+    </div>
+  </div>
+
+</section>
+
+
+</body>
+</html>

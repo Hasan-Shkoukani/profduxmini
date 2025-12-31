@@ -1,0 +1,16 @@
+flask
+twilio
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+langchain
+langchain_community
+langgraph
+python-dotenv
+pandas
+requests
+gunicorn
+langchain-openai
+flask_cors
+ddgs
