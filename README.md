@@ -31,6 +31,8 @@ An AI-powered virtual assistant that can help with a variety of tasks, including
    export TWILIO_TWIML_APP_SID=your_twilio_twiml_app_sid
    export OPENAI_API=your_openai_api_key
    ```
+5. Set the Google oauth credentials.json file
+
 
 ## Usage
 
