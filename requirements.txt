@@ -14,3 +14,5 @@ gunicorn
 langchain-openai
 flask_cors
 ddgs
+itsdangerous
+numpy

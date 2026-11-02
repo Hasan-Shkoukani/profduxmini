@@ -55,14 +55,14 @@ workflow.add_edge("tools", "agent")
 
 app = workflow.compile()
 
-def run(query: str):
+def run(query: str, user_id: str):
     """Run the agent with a given query."""
     initial_state = {
         "messages": [
             SystemMessage(content=SYSTEM_PROMPT),
             HumanMessage(content=query)]
     }
-    result = app.invoke(initial_state)
+    result = app.invoke(initial_state, config={"configurable": {"user_id": user_id}})
     try:
         response = result["messages"][-1].content[0]["text"]
     except:
@@ -70,4 +70,3 @@ def run(query: str):
     else:
         return response
 
-print(run("Hello, can you search for tom?"))

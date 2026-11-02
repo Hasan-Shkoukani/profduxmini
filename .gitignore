@@ -4,3 +4,4 @@ Dockerfile
 token.json
 credentials.json
 __pycache__
+agent/tools/oauth/tokens/

@@ -33,9 +33,14 @@ function stopTimer() {
 }
 
 
+let auth = null;
+
 async function getToken() {
   const res = await fetch("/token");
-  return (await res.json()).token;
+  if (!res.ok) throw new Error("login required");
+  const data = await res.json();
+  auth = data.auth;
+  return data.token;
 }
 
 async function startCall() {
@@ -59,7 +64,7 @@ async function startCall() {
       await device.register();
     }
 
-    call = await device.connect();
+    call = await device.connect({ params: { auth } });
     call.on("disconnect", stopCall);
 
   } catch {
@@ -86,6 +91,6 @@ function stopCall() {
 }
 
 
-callBtn.addEventListener("click", startCall);
-stopBtn.addEventListener("click", stopCall);
+callBtn?.addEventListener("click", startCall);
+stopBtn?.addEventListener("click", stopCall);
 window.addEventListener("beforeunload", stopCall);
