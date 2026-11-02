@@ -1,6 +1,6 @@
 # ProfDuxMini
 
-A voice-driven AI teaching assistant for university staff. Call it from the browser, say what you need, and it acts on Google Workspace for you: looks up students, finds course files, sends emails, checks your calendar and creates Google Meet links.
+A voice-driven AI teaching assistant for university staff. Sign in with Google, call it from the browser, say what you need, and it acts on your own Google Workspace: looks up students, finds course files, sends emails, checks your calendar and creates Google Meet links.
 
 Built as a miniature version of "Professor Dux", the Near East University AI agent.
 
@@ -18,8 +18,8 @@ Browser (Twilio Voice) -> Flask /voice -> speech-to-text (Twilio Gather)
 
 | Tool | What it does |
 | --- | --- |
-| `query_google_sheet` | Answers questions about students and lecturers from a Google Sheet (emails, departments, course lists) |
-| `build_file_catalog` | Lists the files in a Google Drive course folder |
+| `query_google_sheet` | Answers questions about students and lecturers from your `ProfDux Students` sheet using retrieval over every row (any number of rows, any columns, all tabs) |
+| `build_file_catalog` | Lists the files in your `ProfDux Courses` Drive folder |
 | `fetch_drive_file` | Returns a Drive link for the file whose name matches |
 | `email_students` | Sends an email through the Gmail API. Recipients are looked up in the sheet; subject and body are generated if not given |
 | `fetch_weekly_calendar_events` | Reads this week's Google Calendar events (UTC) |
@@ -34,14 +34,14 @@ agent/
   agent.py               LangGraph agent definition and run() entry point
   prompts/system.py      system prompt (persona, tool rules, spoken style)
   tools/tools.py         the seven tools above
-  tools/oauth/google.py  Google OAuth credential loading
+  tools/oauth/google.py  per-user Google token storage and refresh
 templates/, static/      web page with the "Start Call" button
 requirements.txt
 ```
 
 ## Setup
 
-Requirements: Python 3.10+, a Twilio account, an OpenAI API key and a Google Cloud project with the Drive, Sheets, Gmail and Calendar APIs enabled.
+Requirements: Python 3.10+, a Twilio account, an OpenAI API key and a Google Cloud project.
 
 ```bash
 git clone https://github.com/Hasan-Shkoukani/profduxmini.git
@@ -49,21 +49,43 @@ cd profduxmini
 pip install -r requirements.txt
 ```
 
-Set the environment variables (or put the last one in a `.env` file):
+### 1. Google Cloud (once, by the developer)
+
+Users sign in with their own Google accounts, so you only create **one OAuth client for the app**, not one per user.
+
+1. Create a project and enable the Drive, Sheets, Gmail and Calendar APIs.
+2. Configure the OAuth consent screen. While it is in "Testing" mode, add every account that will sign in as a test user.
+3. Create an OAuth client of type **Web application** and add the redirect URI `http://localhost:5000/oauth2callback` (use your public URL if you expose the app).
+4. Download the client JSON and save it as `agent/tools/oauth/credentials.json`. It is gitignored.
+
+You do not create `token.json`. Each user's token is saved automatically on sign-in in `agent/tools/oauth/tokens/` (also gitignored).
+
+### 2. Environment variables (or a `.env` file)
 
 ```bash
 export TWILIO_ACCOUNT_SID=...
 export TWILIO_API_KEY=...
 export TWILIO_API_SECRET=...
 export TWILIO_TWIML_APP_SID=...
-export OPENAI_API=...          # OpenAI API key
+export OPENAI_API=...                  # OpenAI API key
+export FLASK_SECRET=...                # any long random string, keeps logins across restarts
+export GOOGLE_REDIRECT_URI=...         # optional, defaults to http://localhost:5000/oauth2callback
 ```
 
-Then:
+### 3. Twilio
 
-1. Put your Google OAuth `credentials.json` where `agent/tools/oauth/google.py` expects it.
-2. In `agent/tools/tools.py`, replace `GOOGLE_DRIVE_FOLDER_ID` and `SHEET_ID` with your own folder and sheet. The sheet must be shared as "Anyone with the link -> Viewer" because it is read as a CSV export. Do not use a sheet containing real student data.
-3. In your Twilio TwiML App, set the Voice request URL to `https://<your-public-url>/voice`.
+In your TwiML App, set the Voice request URL to `https://<your-public-url>/voice`.
+
+## How users get started
+
+1. Open the site and click **Sign in with Google**, then accept the consent screens (Google shows an "unverified app" warning while the app is in testing).
+2. On first sign-in the app creates two items in the user's own Drive: a folder `ProfDux Courses` and a Google Sheet `ProfDux Students` (header row Name, Email, Course, Department).
+3. Add students to the sheet and course files to the folder. The sheet can use any columns and any number of tabs and rows.
+4. Press **Start Call** and allow the microphone.
+
+## How sheet questions work
+
+Each sheet row is one chunk, embedded with `text-embedding-3-small` and cached per user until the sheet changes. The index is built in the background as soon as a call starts. A question selects every row that matches its keywords plus the most similar rows, answers each slice of 150 rows with `gpt-4o-mini` in parallel, then merges the partial answers. There is no row limit, but very large result sets cost more and take longer.
 
 ## Run
 
@@ -79,7 +101,8 @@ Open the site and press **Start Call**.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/` | Web page with the call button |
-| GET | `/token` | Issues a Twilio Voice access token |
+| GET | `/login`, `/oauth2callback`, `/logout` | Google sign-in flow |
+| GET | `/token` | Issues a Twilio Voice access token (login required) |
 | GET/POST | `/voice` | Answers the call and starts listening |
 | POST | `/process_speech` | Runs the agent on what the caller said and speaks the reply |
 
@@ -92,10 +115,13 @@ Open the site and press **Start Call**.
 
 ## Limitations
 
-- Conversation memory is one global list shared by every caller, so it is meant for a single user or demo.
+- Run with a single worker (`gunicorn -w 1`). Conversation memory and the sheet index live in process memory and are lost on restart.
+- Google tokens are stored as plain files on disk.
+- Gmail and Drive scopes are sensitive, so only listed test users can sign in unless the app goes through Google verification.
+- Twilio gives webhooks about 15 seconds to answer, so a very heavy sheet query can time out.
 - `create_google_meet_link` creates a placeholder event starting now and lasting a week, not a scheduled meeting.
 - The calendar tool only reads events; it cannot create or edit them.
-- Student data is read from a link-shared sheet and sent to OpenAI for answering.
+- Student data is sent to OpenAI for embedding and answering.
 
 ## Tech stack
 

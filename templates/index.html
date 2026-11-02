@@ -32,7 +32,12 @@
       <p class="subtitle">Click to Call</p>
     </div>
 
+    {% if email %}
     <button id="callBtn" class="circle-btn">▶</button>
+    <p class="subtitle">{{ email }} · <a href="/logout">Sign out</a></p>
+    {% else %}
+    <p class="subtitle"><a href="/login">Sign in with Google</a> to call</p>
+    {% endif %}
 
     <div id="callControls" class="hidden call-controls">
       <p id="timer" class="call-timer">00:00</p>
